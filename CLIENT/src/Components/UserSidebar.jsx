@@ -1,10 +1,10 @@
-import { useState, useEffect, useRef } from "react";
-import { Home, Info, FileText } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Home, Info, FileText, FileClock, Menu, X } from "lucide-react";
 
 function UserSidebar() {
-  const [isExpanded, setIsExpanded] = useState(false); // hover or click expanded
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const sidebarRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
 
   // Detect mobile screen
   useEffect(() => {
@@ -14,62 +14,116 @@ function UserSidebar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Collapse sidebar if click outside (mobile)
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (
-        isMobile &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(e.target)
-      ) {
-        setIsExpanded(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [isMobile]);
-
   const menuItems = [
-    { label: "Home", href: "/userdashboard", icon: <Home size={20} /> },
-    { label: "Surveys", href: "/usersurvey", icon: <FileText size={20} /> },
-    { label: "Survey History", href: "/UserProgress", icon: <FileText size={20} /> },
-    { label: "About", href: "/about", icon: <Info size={20} /> },
+    { label: "Home", href: "/userdashboard", icon: <Home size={26} /> },
+    { label: "Surveys", href: "/usersurvey", icon: <FileText size={26} /> },
+    { label: "Survey History", href: "/UserProgress", icon: <FileClock size={26} /> },
+    { label: "About", href: "/about", icon: <Info size={26} /> },
   ];
 
   return (
-    <aside
-      ref={sidebarRef}
-      className={`bg-[#696969] flex flex-col h-screen transition-all duration-200 ease-in-out pt-20  shadow-lg border-3-white rounded
-        ${isExpanded ? "w-64" : "w-15"}
-      `}
-      onMouseEnter={() => !isMobile && setIsExpanded(true)}
-      onMouseLeave={() => !isMobile && setIsExpanded(false)}
-    >
-      {/* Sidebar Title */}
-      <div className="flex items-center justify-center p-4 border-b-3 text-center">
-        
-      </div>
+    <div className="flex">
+      {/* Sidebar */}
+      <aside
+        className={`h-screen bg-white flex flex-col shadow-lg transition-all duration-300 ease-in-out
+        ${isMobile ? "w-16" : isExpanded ? "w-64" : "w-20"}`}
+        onMouseEnter={() => !isMobile && setIsExpanded(true)}
+        onMouseLeave={() => !isMobile && setIsExpanded(false)}
+      >
+        {/* Sidebar Top */}
+        <div className="flex items-center justify-center p-4 border-b relative">
+          {/* Show logo + title only on desktop */}
+          {!isMobile && (
+            <div className="flex flex-col items-center justify-center gap-2 w-full">
+              <img
+                src="/g8LOGO.png"
+                alt="Logo"
+                className="w-[50px] h-auto object-contain"
+              />
+              {isExpanded && (
+                <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat] text-center">
+                  53EBG8
+                </span>
+              )}
+            </div>
+          )}
 
-      {/* Navigation */}
-      <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-white">
-        {menuItems.map((item, idx) => (
-          <a
-            key={idx}
-            href={item.href}
-            className="flex items-center gap-2 p-3 rounded hover:bg-gray-300"
-            onClick={(e) => {
-              if (isMobile) {
-                e.preventDefault(); // prevent navigation for demo
-                setIsExpanded(true); // expand entire sidebar
-              }
-            }}
-          >
-            {item.icon}
-            {isExpanded && <span>{item.label}</span>}
-          </a>
-        ))}
-      </nav>
-    </aside>
+          {/* Hamburger only on mobile */}
+          {isMobile && (
+            <button
+              onClick={() => setIsOpen(true)}
+              className="text-black"
+            >
+              <Menu size={28} />
+            </button>
+          )}
+        </div>
+
+        {/* Desktop Navigation */}
+        {!isMobile && (
+          <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
+            {menuItems.map((item, idx) => (
+              <a
+                key={idx}
+                href={item.href}
+                className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
+              >
+                {item.icon}
+                {isExpanded && <span>{item.label}</span>}
+              </a>
+            ))}
+          </nav>
+        )}
+      </aside>
+
+      {/* Sliding Navigation Panel (Mobile Only) */}
+      {isMobile && (
+        <div
+          className={`fixed top-0 left-0 h-screen w-56 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+        >
+          {/* Panel Header with Logo + Title */}
+          <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center gap-2">
+              <img
+                src="/g8LOGO.png"
+                alt="Logo"
+                className="w-[35px] h-auto object-contain"
+              />
+              <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat]">
+                53EBG8
+              </span>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="text-black">
+              <X size={28} />
+            </button>
+          </div>
+
+          {/* Panel Navigation */}
+          <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
+            {menuItems.map((item, idx) => (
+              <a
+                key={idx}
+                href={item.href}
+                className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
+                onClick={() => setIsOpen(false)}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </a>
+            ))}
+          </nav>
+        </div>
+      )}
+
+      {/* Overlay when panel is open */}
+      {isMobile && isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-30 z-40"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+    </div>
   );
 }
 

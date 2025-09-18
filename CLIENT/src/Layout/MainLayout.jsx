@@ -1,25 +1,29 @@
-import {Outlet, useLocation} from 'react-router-dom'
-import Header from '../Components/Header.jsx';
-import Footer from '../Components/Footer';
+import UserSidebar from "../Components/UserSidebar";
+import Header from "../Components/Header";
+import Footer from "../Components/Footer";
+import { Outlet } from "react-router-dom";
 
-
-const MainLayout = () => {
-    const location = useLocation();
+export default function MainLayout() {
   return (
-    <div className='text-black'>
-        <Header  />
+    <div className="flex h-screen">
 
-        <Outlet/>
-      
+      {/* Right column: Header, Content, Footer stacked */}
+      <div className="flex flex-col flex-1">
+        {/* Header stays at the top but only in right side */}
+        <div className="bg-white shadow">
+          <Header />
+        </div>
 
-        <Footer />
+        {/* Main content takes the remaining space */}
+        <main className="flex-1 p-4 overflow-auto bg-gray-50">
+          <Outlet />
+        </main>
 
-
-
-
-
+        {/* Footer only in right side */}
+        <div className="bg-white shadow">
+          <Footer />
+        </div>
+      </div>
     </div>
-  )
+  );
 }
-
-export default MainLayout

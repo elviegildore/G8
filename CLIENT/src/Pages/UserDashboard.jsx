@@ -1,16 +1,10 @@
-import React from "react";
-import UserSidebar from "../Components/UserSidebar";
 import UserMain from "../Components/UserMain";
-import Footer from "../Components/Footer";
-
+import UserSidebar from "../Components/UserSidebar";
 function UserDashboard() {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-100 border-red-300">
-      {/* Page content (sidebar + main) */}
+    <div className="h-screen flex flex-col bg-gray-100 border-red-300">
       <div className="flex flex-1">
-        {/* Sidebar */}
-        <UserSidebar />
-
+        <UserSidebar/>
         {/* Main content */}
         <main className="flex-1 p-6">
           <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
@@ -18,8 +12,7 @@ function UserDashboard() {
         </main>
       </div>
 
-      {/* Footer */}
-      <Footer />
+     
     </div>
   );
 }
