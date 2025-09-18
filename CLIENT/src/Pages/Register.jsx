@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Register = ({ onSuccess }) => {
-  const showBackButton = location.pathname !== "/";
-
+  const showBackButton = window.location.pathname !== "/";
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     rank: "",
     fullname: "",
@@ -21,6 +21,7 @@ const Register = ({ onSuccess }) => {
   const [message, setMessage] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const [passwordValidation, setPasswordValidation] = useState({
     length: false,
     uppercase: false,
@@ -28,8 +29,9 @@ const Register = ({ onSuccess }) => {
     special: false,
   });
 
+  // ✅ Password strength validation
   useEffect(() => {
-    const password = formData.password;
+    const password = formData.password || "";
     setPasswordValidation({
       length: password.length >= 8,
       uppercase: /[A-Z]/.test(password),
@@ -38,36 +40,146 @@ const Register = ({ onSuccess }) => {
     });
   }, [formData.password]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setFieldErrors({ ...fieldErrors, [e.target.name]: false });
+  // ✅ Fullname validation
+  const validateFullname = (value) => {
+    const v = (value || "").trim();
+    if (v.length < 3) return false;
+    return /^[A-Za-zÀ-ÖØ-öø-ÿ'\-\s]+$/.test(v);
   };
 
+  // ✅ Serial number validation
+  const validateSerialNumber = (value) => {
+    if (!value) return false;
+    return /^\d{3,}$/.test(value); // must be at least 3 digits
+  };
+
+  // ✅ Silent form validity check (for disabling submit)
+  const isFormValidSilent = () => {
+    const required = [
+      "rank",
+      "fullname",
+      "serial_number",
+      "unit",
+      "office_designation",
+      "skills",
+      "password",
+      "confirmPassword",
+    ];
+    for (const f of required) {
+      if (!formData[f] || formData[f].toString().trim() === "") return false;
+    }
+    if (!validateFullname(formData.fullname)) return false;
+    if (!validateSerialNumber(formData.serial_number)) return false;
+    if (formData.password !== formData.confirmPassword) return false;
+    if (Object.values(passwordValidation).includes(false)) return false;
+    return true;
+  };
+
+  // ✅ Check uniqueness from DB
+  const checkUnique = async (field, value) => {
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/check-unique?field=${field}&value=${encodeURIComponent(
+          value.trim()
+        )}`
+      );
+      if (!res.ok) return true; // assume unique if API fails
+      const data = await res.json();
+      return data.isUnique;
+    } catch (err) {
+      console.error(`Error checking ${field}:`, err);
+      return true; // assume unique if error
+    }
+  };
+
+  // ✅ Handle field changes
+  const handleChange = async (e) => {
+    const { name, value } = e.target;
+    let newValue = value;
+
+    if (name === "serial_number") {
+      newValue = value.replace(/\D/g, ""); // digits only
+    }
+
+    setFormData((prev) => ({ ...prev, [name]: newValue }));
+
+    if (name === "fullname") {
+      const invalid = !validateFullname(newValue);
+      setFieldErrors((prev) => ({ ...prev, fullname: invalid }));
+      if (!invalid && newValue.trim() !== "") {
+        const unique = await checkUnique("fullname", newValue);
+        if (!unique) {
+          setFieldErrors((prev) => ({ ...prev, fullname: true }));
+          setMessage("Fullname already exists.");
+        } else {
+          setMessage("");
+        }
+      }
+    }
+
+    if (name === "serial_number") {
+      const invalid = !validateSerialNumber(newValue);
+      setFieldErrors((prev) => ({ ...prev, serial_number: invalid }));
+      if (!invalid && newValue.trim() !== "") {
+        const unique = await checkUnique("serial_number", newValue);
+        if (!unique) {
+          setFieldErrors((prev) => ({ ...prev, serial_number: true }));
+          setMessage("Serial number already exists.");
+        } else {
+          setMessage("");
+        }
+      }
+    }
+
+    if (name === "password" || name === "confirmPassword") {
+      setFieldErrors((prev) => ({
+        ...prev,
+        password: false,
+        confirmPassword: false,
+      }));
+    }
+  };
+
+  // ✅ Validate all fields before submit
+  const checkAllValidAndSetErrors = () => {
+    const newErrors = {};
+    if (!formData.rank) newErrors.rank = true;
+    if (!formData.fullname || !validateFullname(formData.fullname))
+      newErrors.fullname = true;
+    if (!formData.serial_number || !validateSerialNumber(formData.serial_number))
+      newErrors.serial_number = true;
+    if (!formData.unit) newErrors.unit = true;
+    if (!formData.office_designation) newErrors.office_designation = true;
+    if (!formData.skills) newErrors.skills = true;
+
+    if (!formData.password) newErrors.password = true;
+    if (formData.password !== formData.confirmPassword) {
+      newErrors.password = true;
+      newErrors.confirmPassword = true;
+    }
+    if (Object.values(passwordValidation).includes(false))
+      newErrors.password = true;
+
+    setFieldErrors((prev) => ({ ...prev, ...newErrors }));
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ✅ Handle register submit
   const handleRegister = async (e) => {
     e.preventDefault();
     setMessage("");
-    setFieldErrors({});
 
-    if (formData.password !== formData.confirmPassword) {
-      setFieldErrors({ password: true, confirmPassword: true });
-      return;
-    }
-
-    if (
-      !passwordValidation.length ||
-      !passwordValidation.uppercase ||
-      !passwordValidation.number ||
-      !passwordValidation.special
-    ) {
-      setFieldErrors({ password: true });
+    if (!checkAllValidAndSetErrors()) {
+      setMessage("Please fix the highlighted fields before submitting.");
       return;
     }
 
     try {
+      const { confirmPassword, ...payload } = formData;
       const res = await fetch("http://localhost:5000/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, confirmPassword: undefined }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
 
@@ -83,8 +195,13 @@ const Register = ({ onSuccess }) => {
           password: "",
           confirmPassword: "",
         });
+        setFieldErrors({});
+        if (onSuccess) onSuccess();
       } else {
-        if (data.fieldErrors) setFieldErrors(data.fieldErrors);
+        if (data.fieldErrors) {
+          setFieldErrors((prev) => ({ ...prev, ...data.fieldErrors }));
+        }
+        setMessage(data.message || data.error || "Registration failed.");
       }
     } catch (err) {
       console.error(err);
@@ -92,11 +209,12 @@ const Register = ({ onSuccess }) => {
     }
   };
 
+  const isFormValid = isFormValidSilent();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 p-30">
       <div className="w-full max-w-lg bg-white rounded-xl shadow-lg p-10 space-y-4">
-
-         {showBackButton && (
+        {showBackButton && (
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -110,14 +228,17 @@ const Register = ({ onSuccess }) => {
           Register
         </h2>
 
-        {message && <p className="text-green-500 text-center">{message}</p>}
+        {message && <p className="text-center text-sm text-red-600">{message}</p>}
 
         <form onSubmit={handleRegister} className="space-y-3">
+          {/* Rank */}
           <select
             name="rank"
             value={formData.rank}
             onChange={handleChange}
-            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
+            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+              fieldErrors.rank ? "border-red-500" : ""
+            }`}
             required
           >
             <option value="">Select Rank</option>
@@ -139,32 +260,66 @@ const Register = ({ onSuccess }) => {
             <option value="PVT">PVT</option>
           </select>
 
-          <input
-            type="text"
-            name="fullname"
-            value={formData.fullname}
-            onChange={handleChange}
-            placeholder="Fullname"
-            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
-            required
-          />
+          {/* Fullname */}
+          <div>
+            <input
+              type="text"
+              name="fullname"
+              value={formData.fullname}
+              onChange={handleChange}
+              placeholder="Fullname"
+              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+                fieldErrors.fullname ? "border-red-500" : ""
+              }`}
+              required
+              aria-invalid={fieldErrors.fullname ? "true" : "false"}
+              onBlur={() =>
+                setFieldErrors((prev) => ({
+                  ...prev,
+                  fullname: !validateFullname(formData.fullname),
+                }))
+              }
+            />
+            {fieldErrors.fullname && (
+              <p className="text-xs text-red-600 mt-1">
+                Fullname is invalid or already exists.
+              </p>
+            )}
+          </div>
 
-          <input
-            type="number"
-            name="serial_number"
-            value={formData.serial_number}
-            onChange={handleChange}
-            placeholder="Serial Number"
-            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
-            required/>
- 
-          <select 
+          {/* Serial Number */}
+          <div>
+            <input
+              type="text"
+              inputMode="numeric"
+              pattern="\d*"
+              name="serial_number"
+              value={formData.serial_number}
+              onChange={handleChange}
+              placeholder="Serial Number"
+              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+                fieldErrors.serial_number ? "border-red-500" : ""
+              }`}
+              required
+              aria-invalid={fieldErrors.serial_number ? "true" : "false"}
+            />
+            {fieldErrors.serial_number && (
+              <p className="text-xs text-red-600 mt-1">
+                Serial number is invalid or already exists.
+              </p>
+            )}
+          </div>
+
+          {/* Unit */}
+          <select
             name="unit"
             value={formData.unit}
             onChange={handleChange}
-            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
-            required>
-            
+            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+              fieldErrors.unit ? "border-red-500" : ""
+            }`}
+            required
+          >
             <option value="">Select Unit</option>
             <option value="HHC">HHC</option>
             <option value="ESC">ESC</option>
@@ -172,29 +327,35 @@ const Register = ({ onSuccess }) => {
             <option value="543ECB">543ECB</option>
             <option value="546ECB">546ECB</option>
             <option value="552ECB">552ECB</option>
-            </select>
-          
+          </select>
 
+          {/* Office */}
           <input
             type="text"
             name="office_designation"
             value={formData.office_designation}
             onChange={handleChange}
             placeholder="Office/Unit Designation"
-            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
+            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+              fieldErrors.office_designation ? "border-red-500" : ""
+            }`}
             required
           />
 
+          {/* Skills */}
           <input
             type="text"
             name="skills"
             value={formData.skills}
             onChange={handleChange}
             placeholder="Skills"
-            className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
+            className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+              fieldErrors.skills ? "border-red-500" : ""
+            }`}
             required
           />
 
+          {/* Password */}
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -202,7 +363,9 @@ const Register = ({ onSuccess }) => {
               value={formData.password}
               onChange={handleChange}
               placeholder="Password"
-              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
+              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+                fieldErrors.password ? "border-red-500" : ""
+              }`}
               required
             />
             <button
@@ -214,6 +377,7 @@ const Register = ({ onSuccess }) => {
             </button>
           </div>
 
+          {/* Confirm Password */}
           <div className="relative">
             <input
               type={showConfirmPassword ? "text" : "password"}
@@ -221,7 +385,9 @@ const Register = ({ onSuccess }) => {
               value={formData.confirmPassword}
               onChange={handleChange}
               placeholder="Confirm Password"
-              className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins]"
+              className={`w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-[#57564F] font-[Poppins] ${
+                fieldErrors.confirmPassword ? "border-red-500" : ""
+              }`}
               required
             />
             <button
@@ -233,6 +399,7 @@ const Register = ({ onSuccess }) => {
             </button>
           </div>
 
+          {/* Password rules */}
           {formData.password && (
             <ul className="text-xs text-red-600 list-disc list-inside">
               {!passwordValidation.length && <li>At least 8 characters</li>}
@@ -242,9 +409,15 @@ const Register = ({ onSuccess }) => {
             </ul>
           )}
 
+          {/* Submit */}
           <button
             type="submit"
-            className="w-full bg-[#57564F] text-white p-3 rounded-md font-semibold hover:bg-black transition duration-200 font-[Montserrat]"
+            disabled={!isFormValid}
+            className={`w-full text-white p-3 rounded-md font-semibold transition duration-200 font-[Montserrat] ${
+              isFormValid
+                ? "bg-[#57564F] hover:bg-black"
+                : "bg-gray-300 cursor-not-allowed"
+            }`}
           >
             Register
           </button>

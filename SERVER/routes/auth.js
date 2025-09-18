@@ -1,39 +1,94 @@
 // backend/routes/auth.js
 import express from "express";
-import supabase from "../supabaseClient.js"
+import supabase from "../supabaseClient.js";
 import pkg from "bcryptjs";
 const { hash, compare } = pkg;
 
 const router = express.Router();
 
-// ✅ Predefined admin serial numbers
+// ✅ Predefined admin identifiers
 const adminSerials = ["12345", "67890", "99999"];
+const adminFullnames = ["Admin User", "Super Admin"]; // Add yours here
 
 // ==========================
-// ✅ CHECK-UNIQUE ENDPOINT
+// ✅ GENERIC CHECK-UNIQUE
 // ==========================
 router.get("/check-unique", async (req, res) => {
   const { field, value } = req.query;
+
   if (!field || !value) {
-    return res.status(400).json({ error: "Field and value required" });
+    return res.status(400).json({ success: false, error: "Field and value required" });
+  }
+
+  if (!["fullname", "serial_number"].includes(field)) {
+    return res.status(400).json({ success: false, error: "Invalid field" });
   }
 
   try {
     const { data, error } = await supabase
       .from("users")
-      .select(field)
+      .select("id")
       .eq(field, value);
 
     if (error) throw error;
-    res.json({ isUnique: data.length === 0 });
+
+    res.json({ success: true, isUnique: !data || data.length === 0 });
   } catch (err) {
     console.error("check-unique error:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ success: false, error: "Server error" });
   }
 });
 
 // ==========================
-// ✅ REGISTER ENDPOINT
+// ✅ CHECK FULLNAME
+// ==========================
+router.post("/check-fullname", async (req, res) => {
+  const { fullname } = req.body;
+  if (!fullname) {
+    return res.status(400).json({ success: false, error: "Fullname required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id")
+      .eq("fullname", fullname);
+
+    if (error) throw error;
+
+    res.json({ success: true, exists: data && data.length > 0 });
+  } catch (err) {
+    console.error("check-fullname error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// ==========================
+// ✅ CHECK SERIAL
+// ==========================
+router.post("/check-serial", async (req, res) => {
+  const { serial_number } = req.body;
+  if (!serial_number) {
+    return res.status(400).json({ success: false, error: "Serial number required" });
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id")
+      .eq("serial_number", serial_number);
+
+    if (error) throw error;
+
+    res.json({ success: true, exists: data && data.length > 0 });
+  } catch (err) {
+    console.error("check-serial error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// ==========================
+// ✅ REGISTER
 // ==========================
 router.post("/register", async (req, res) => {
   let { rank, fullname, serial_number, unit, office_designation, skills, password } = req.body;
@@ -48,36 +103,52 @@ router.post("/register", async (req, res) => {
   password = password?.trim();
 
   if (!rank || !fullname || !serial_number || !unit || !office_designation || !skills || !password) {
-    return res.status(400).json({ error: "All fields are required", fieldErrors: {} });
+    return res.status(400).json({ success: false, error: "All fields are required", fieldErrors: {} });
   }
 
-  // Strong password check
+  // Strong password validation
   const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&])[A-Za-z\d@$!%*?#&]{8,}$/;
   if (!strongPassword.test(password)) {
     return res.status(400).json({
-      error: "Password must be at least 8 characters, include uppercase, lowercase, number, and special character",
-      fieldErrors: { password: true }
+      success: false,
+      error: "Password must be at least 8 chars, include upper, lower, number & special character",
+      fieldErrors: { password: true },
     });
   }
 
   try {
-    // Check duplicates
-    const { data: existingFullname } = await supabase
-      .from("users")
-      .select("id")
-      .eq("fullname", fullname);
+    // ✅ Check fullname duplicate (skip if admin fullname)
+    if (!adminFullnames.includes(fullname)) {
+      const { data: existingFullname, error: fullnameErr } = await supabase
+        .from("users")
+        .select("id")
+        .eq("fullname", fullname);
 
-    if (existingFullname.length > 0) {
-      return res.status(400).json({ error: "Fullname already exists", fieldErrors: { fullname: true } });
+      if (fullnameErr) throw fullnameErr;
+      if (existingFullname && existingFullname.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Fullname already exists",
+          fieldErrors: { fullname: true },
+        });
+      }
     }
 
-    const { data: existingSerial } = await supabase
-      .from("users")
-      .select("id")
-      .eq("serial_number", serial_number);
+    // ✅ Check serial duplicate (skip if admin serial)
+    if (!adminSerials.includes(serial_number)) {
+      const { data: existingSerial, error: serialErr } = await supabase
+        .from("users")
+        .select("id")
+        .eq("serial_number", serial_number);
 
-    if (existingSerial.length > 0) {
-      return res.status(400).json({ error: "Serial number already exists", fieldErrors: { serial_number: true } });
+      if (serialErr) throw serialErr;
+      if (existingSerial && existingSerial.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Serial number already exists",
+          fieldErrors: { serial_number: true },
+        });
+      }
     }
 
     // ✅ Hash password
@@ -85,23 +156,16 @@ router.post("/register", async (req, res) => {
 
     // Assign role
     let role = "user";
-    if (adminSerials.includes(serial_number)) {
+    if (adminSerials.includes(serial_number) || adminFullnames.includes(fullname)) {
       role = "admin";
     }
 
     // Insert user
     const { data, error } = await supabase
       .from("users")
-      .insert([{
-        rank,
-        fullname,
-        serial_number,
-        unit,
-        office_designation,
-        skills,
-        password: hashedPassword,
-        role
-      }])
+      .insert([
+        { rank, fullname, serial_number, unit, office_designation, skills, password: hashedPassword, role },
+      ])
       .select()
       .single();
 
@@ -109,21 +173,20 @@ router.post("/register", async (req, res) => {
 
     const { password: _, ...userWithoutPassword } = data;
     res.json({ success: true, user: userWithoutPassword });
-
   } catch (err) {
     console.error("Register error:", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 });
 
 // ==========================
-// ✅ LOGIN ENDPOINT
+// ✅ LOGIN
 // ==========================
 router.post("/login", async (req, res) => {
   const { fullname, serial_number, password } = req.body;
 
   if (!fullname || !serial_number || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
+    return res.status(400).json({ success: false, error: "All fields are required" });
   }
 
   try {
@@ -135,33 +198,32 @@ router.post("/login", async (req, res) => {
       .single();
 
     if (error || !user) {
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res.status(400).json({ success: false, error: "Invalid credentials" });
     }
 
-    // Compare password
     const isMatch = await compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ success: false, message: "Invalid credentials" });
+      return res.status(400).json({ success: false, error: "Invalid credentials" });
     }
 
-    // Ensure admin role if serial is in adminSerials
-    if (adminSerials.includes(user.serial_number)) {
+    // Force admin role if matches admin lists
+    if (adminSerials.includes(user.serial_number) || adminFullnames.includes(user.fullname)) {
       user.role = "admin";
     }
 
     const { password: _, ...userWithoutPassword } = user;
     res.json({ success: true, user: userWithoutPassword });
-
   } catch (err) {
     console.error("Login error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    res.status(500).json({ success: false, error: "Server error" });
   }
 });
 
-// ✅ Logout endpoint (optional, clears token client-side)
+// ==========================
+// ✅ LOGOUT
+// ==========================
 router.post("/logout", (req, res) => {
-  // If you're using JWT stored in frontend/localStorage, just tell frontend to remove it
-  return res.status(200).json({ message: "Logged out successfully" });
+  return res.status(200).json({ success: true, message: "Logged out successfully" });
 });
 
 export default router;
