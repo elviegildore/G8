@@ -1,5 +1,5 @@
-import UserMain from "../Components/UserMain";
 import UserSidebar from "../Components/UserSidebar";
+import Survey from "./Survey";
 import UserSurvey from "./UserSurvey";
 function UserDashboard() {
   return (
@@ -9,7 +9,7 @@ function UserDashboard() {
         {/* Main content */}
         <main className="flex-1 p-6">
           <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-          <UserMain />
+          <Survey />
           <UserSurvey />
         </main>
       </div>

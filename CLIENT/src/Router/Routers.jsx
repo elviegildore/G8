@@ -8,6 +8,7 @@ import Login from "../Pages/Login";
 import Register from "../Pages/Register";
 import AdminDashboard from "../Pages/AdminDashboard";
 import UserDashboard from "../Pages/UserDashboard";
+import Survey from "../Pages/Survey.jsx";
 
 const Routers = () => {
   const { user } = useUser();
@@ -24,7 +25,10 @@ const Routers = () => {
           path="login"
           element={
             user ? (
-              <Navigate to={user.role === "admin" ? "/admindashboard" : "/userdashboard"} replace />
+              <Navigate
+                to={user.role === "admin" ? "/admindashboard" : "/userdashboard"}
+                replace
+              />
             ) : (
               <Login />
             )
@@ -34,7 +38,10 @@ const Routers = () => {
           path="register"
           element={
             user ? (
-              <Navigate to={user.role === "admin" ? "/admindashboard" : "/userdashboard"} replace />
+              <Navigate
+                to={user.role === "admin" ? "/admindashboard" : "/userdashboard"}
+                replace
+              />
             ) : (
               <Register />
             )
@@ -47,6 +54,14 @@ const Routers = () => {
           element={
             <ProtectedRoute role="admin">
               <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="survey"
+          element={
+            <ProtectedRoute role="admin">
+              <Survey />
             </ProtectedRoute>
           }
         />

@@ -1,17 +1,20 @@
-import LogoutButton from "../components/LogoutButton"; 
-
-const AdminDashboard = () => {
+import AdminSidebar from "../Components/AdminSidebar"
+import Survey from "./Survey";
+function AdminDashboard() {
   return (
-    <div className='text-black text-7xl h-screen p-20'>AdminDashboard
-            <LogoutButton />
+    <div className="h-screen flex flex-col bg-gray-100 border-red-300">
+      <div className="flex flex-1">
+        <AdminSidebar/>
+        {/* Main content */}
+        <main className="flex-1 p-6">
+          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
+          <Survey />
+        </main>
+      </div>
 
-    
-    
-    
+     
     </div>
-    
-    
-  )
+  );
 }
 
-export default AdminDashboard
+export default AdminDashboard;

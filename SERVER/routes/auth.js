@@ -2,9 +2,13 @@
 import express from "express";
 import supabase from "../supabaseClient.js";
 import pkg from "bcryptjs";
-const { hash, compare } = pkg;
+import jwt from "jsonwebtoken";
 
+const { hash, compare } = pkg;
 const router = express.Router();
+
+// ✅ JWT secret (put in .env for production)
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
 
 // ✅ Predefined admin identifiers
 const adminSerials = ["12345", "67890", "99999"];
@@ -180,7 +184,7 @@ router.post("/register", async (req, res) => {
 });
 
 // ==========================
-// ✅ LOGIN
+// ✅ LOGIN (with JWT)
 // ==========================
 router.post("/login", async (req, res) => {
   const { fullname, serial_number, password } = req.body;
@@ -211,8 +215,15 @@ router.post("/login", async (req, res) => {
       user.role = "admin";
     }
 
+    // ✅ Generate JWT token
+    const token = jwt.sign(
+      { id: user.id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
     const { password: _, ...userWithoutPassword } = user;
-    res.json({ success: true, user: userWithoutPassword });
+    res.json({ success: true, user: userWithoutPassword, token });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ success: false, error: "Server error" });
@@ -223,6 +234,7 @@ router.post("/login", async (req, res) => {
 // ✅ LOGOUT
 // ==========================
 router.post("/logout", (req, res) => {
+  // On client side: just remove the token
   return res.status(200).json({ success: true, message: "Logged out successfully" });
 });
 
