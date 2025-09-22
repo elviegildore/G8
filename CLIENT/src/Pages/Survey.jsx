@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom"; 
-import { createClient } from "@supabase/supabase-js";
-
-// Supabase client
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { Link } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 const SurveyList = () => {
   const [surveys, setSurveys] = useState([]);
@@ -16,13 +10,11 @@ const SurveyList = () => {
     const fetchSurveys = async () => {
       setLoading(true);
 
-      // Fetch all surveys with nested questions + options
       const { data, error } = await supabase
         .from("surveys")
         .select(`
           id,
           title,
-          description,
           survey_questions (
             id,
             question_text,
@@ -35,9 +27,9 @@ const SurveyList = () => {
         `);
 
       if (error) {
-        console.error("Error fetching surveys:", error);
+        console.error("❌ Error fetching surveys:", error.message);
       } else {
-        setSurveys(data);
+        setSurveys(data || []);
       }
       setLoading(false);
     };
@@ -46,6 +38,10 @@ const SurveyList = () => {
   }, []);
 
   if (loading) return <p>Loading surveys...</p>;
+
+  console.log("Supabase URL:", import.meta.env.VITE_SUPABASE_URL);
+console.log("Supabase Key:", import.meta.env.VITE_SUPABASE_ANON_KEY);
+
 
   return (
     <div className="p-6">
@@ -56,18 +52,20 @@ const SurveyList = () => {
             key={survey.id}
             className="p-4 border rounded-lg shadow-sm hover:shadow-md transition"
           >
-            <Link to={`/survey/${survey.id}`} className="text-blue-600 font-semibold">
+            <Link
+              to={`/survey/${survey.id}`}
+              className="text-blue-600 font-semibold"
+            >
               {survey.title}
             </Link>
-            <p className="text-gray-600">{survey.description}</p>
 
             {/* Questions + options */}
             <ul className="mt-3 space-y-2">
-              {survey.survey_questions.map((q) => (
+              {(survey.survey_questions || []).map((q) => (
                 <li key={q.id} className="border-t pt-2">
                   <p className="font-medium">{q.question_text}</p>
                   <ul className="ml-4 list-disc">
-                    {q.survey_options.map((opt) => (
+                    {(q.survey_options || []).map((opt) => (
                       <li key={opt.id}>{opt.option_text}</li>
                     ))}
                   </ul>
