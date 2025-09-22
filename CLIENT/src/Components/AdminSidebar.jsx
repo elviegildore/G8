@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Home, Info, FileText, FileClock, Menu, X } from "lucide-react";
+import { Home, Info, FileText, Menu, X, FolderKanban } from "lucide-react";
 
 function AdminSidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -16,9 +16,11 @@ function AdminSidebar() {
   }, []);
 
   const menuItems = [
-    { label: "Home", href: "/Admindashboard", icon: <Home size={26} /> },
-    { label: "Surveys", href: "/Survey", icon: <FileText size={26} /> },
-    { label: "About", href: "/about", icon: <Info size={26} /> },
+    { label: "Home", link: "/Admindashboard", icon: <Home size={26} /> },
+    { label: "Surveys", link: "/Admindashboard/survey", icon: <FileText size={26} /> },
+    { label: "Manage Survey", link: "/AdminDashboard/managesurvey", icon: <FolderKanban  size={26} /> },
+    { label: "About", link: "/about", icon: <Info size={26} /> }
+
   ];
 
   return (
@@ -65,7 +67,7 @@ function AdminSidebar() {
             {menuItems.map((item, idx) => (
               <Link
   key={idx}
-  to={item.href}   // ✅ use "to" instead of "href"
+  to={item.link}   // ✅ use "to" instead of "href"
   className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
 >
   {item.icon}
@@ -106,7 +108,7 @@ function AdminSidebar() {
             {menuItems.map((item, idx) => (
               <Link
                 key={idx}
-                href={item.href}
+                to={item.link}
                 className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
                 onClick={() => setIsOpen(false)}
               >

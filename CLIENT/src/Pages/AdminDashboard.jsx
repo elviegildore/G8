@@ -1,18 +1,18 @@
-import AdminSidebar from "../Components/AdminSidebar"
-import Survey from "./Survey";
+import { Outlet } from "react-router-dom";
+import AdminSidebar from "../Components/AdminSidebar";
+
 function AdminDashboard() {
   return (
-    <div className="h-screen flex flex-col bg-gray-100 border-red-300">
+    <div className="h-screen flex flex-col bg-gray-100">
       <div className="flex flex-1">
-        <AdminSidebar/>
-        {/* Main content */}
-        <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-          <Survey />
+        {/* Sidebar always stays */}
+        <AdminSidebar />
+
+        {/* Main content switches via routing */}
+        <main className="flex-1 p-6 overflow-y-auto">
+          <Outlet />
         </main>
       </div>
-
-     
     </div>
   );
 }

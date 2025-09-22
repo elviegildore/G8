@@ -9,6 +9,7 @@ import Register from "../Pages/Register";
 import AdminDashboard from "../Pages/AdminDashboard";
 import UserDashboard from "../Pages/UserDashboard";
 import Survey from "../Pages/Survey.jsx";
+import ManageSurvey from "../Pages/ManageSurvey.jsx"
 
 const Routers = () => {
   const { user } = useUser();
@@ -50,21 +51,14 @@ const Routers = () => {
 
         {/* Protected Routes */}
         <Route
-          path="admindashboard"
+          path="Admindashboard"
           element={
             <ProtectedRoute role="admin">
               <AdminDashboard />
             </ProtectedRoute>
           }
         />
-        <Route
-          path="survey"
-          element={
-            <ProtectedRoute role="admin">
-              <Survey />
-            </ProtectedRoute>
-          }
-        />
+       
         <Route
           path="userdashboard"
           element={
@@ -73,7 +67,25 @@ const Routers = () => {
             </ProtectedRoute>
           }
         />
-      </Route>
+
+        <Route
+          path="admindashboard"
+          element={
+            <ProtectedRoute role="admin">
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        >
+          {/* Default dashboard content */}
+          <Route index element={<h1 className="text-2xl font-bold">Dashboard</h1>} />
+
+          {/* Nested pages */}
+          <Route path="survey" element={<Survey />} />
+          <Route path="managesurvey" element={<ManageSurvey />} />
+        </Route>
+
+
+              </Route>
     </Routes>
   );
 };
