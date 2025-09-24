@@ -10,6 +10,10 @@ import AdminDashboard from "../Pages/AdminDashboard";
 import UserDashboard from "../Pages/UserDashboard";
 import Survey from "../Pages/Survey.jsx";
 import ManageSurvey from "../Pages/ManageSurvey.jsx"
+import ManageAdmin from "../Pages/ManageAdmin.jsx";
+import ManageUser from "../Pages/ManageUser.jsx";
+import ManageResponse from "../Pages/ManageResponse.jsx";
+
 
 const Routers = () => {
   const { user } = useUser();
@@ -73,19 +77,21 @@ const Routers = () => {
           element={
             <ProtectedRoute role="admin">
               <AdminDashboard />
-            </ProtectedRoute>
-          }
-        >
-          {/* Default dashboard content */}
-          <Route index element={<h1 className="text-2xl font-bold">Dashboard</h1>} />
+            </ProtectedRoute>}>
 
-          {/* Nested pages */}
-          <Route path="survey" element={<Survey />} />
-          <Route path="managesurvey" element={<ManageSurvey />} />
+
+            {/* Default dashboard content */}
+            <Route index element={<h1 className="text-2xl font-bold">Dashboard</h1>} />
+
+            {/* Nested pages */}
+            <Route path="survey" element={<Survey />} />
+            <Route path="managesurvey" element={<ManageSurvey/>} />
+            <Route path="manageadmin" element={<ManageAdmin />} />
+            <Route path="manageuser" element={<ManageUser/>} />
+            <Route path="manageresponse" element={<ManageResponse />} />
+            </Route>
+
         </Route>
-
-
-              </Route>
     </Routes>
   );
 };

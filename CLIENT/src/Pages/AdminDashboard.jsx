@@ -2,17 +2,25 @@ import { Outlet } from "react-router-dom";
 import AdminSidebar from "../Components/AdminSidebar";
 
 function AdminDashboard() {
-  return (
-    <div className="h-screen flex flex-col bg-gray-100">
-      <div className="flex flex-1">
-        {/* Sidebar always stays */}
-        <AdminSidebar />
+  const desktopSidebarWidth = "w-3"; // sidebar width (20rem)
 
-        {/* Main content switches via routing */}
-        <main className="flex-1 p-6 overflow-y-auto">
-          <Outlet />
-        </main>
+  return (
+    <div className="h-screen flex">
+      {/* Sidebar */}
+      <div
+        className={`fixed top-0 left-0 h-screen ${desktopSidebarWidth} bg-white z-40`}
+      >
+        <AdminSidebar />
       </div>
+
+      {/* Main content */}
+      <main
+        className={`
+          h-screen overflow-y-auto transition-all
+          ml-0 md:ml-60`}
+      >
+        <Outlet />
+      </main>
     </div>
   );
 }

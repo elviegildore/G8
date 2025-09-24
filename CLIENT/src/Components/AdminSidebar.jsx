@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Home, Info, FileText, Menu, X, FolderKanban } from "lucide-react";
+import { Home, Info, FileText, Menu, X, FolderKanban, MessageCircleReply, UserPen } from "lucide-react";
 
 function AdminSidebar() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true); // ✅ always expanded for desktop
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -18,20 +18,21 @@ function AdminSidebar() {
   const menuItems = [
     { label: "Home", link: "/Admindashboard", icon: <Home size={26} /> },
     { label: "Surveys", link: "/Admindashboard/survey", icon: <FileText size={26} /> },
-    { label: "Manage Survey", link: "/AdminDashboard/managesurvey", icon: <FolderKanban  size={26} /> },
-    { label: "About", link: "/about", icon: <Info size={26} /> }
-
+    { label: "Manage Survey", link: "/AdminDashboard/managesurvey", icon: <FolderKanban size={26} /> },
+    { label: "Manage Response", link: "/AdminDashboard/managresponse", icon: <MessageCircleReply size={26} /> },
+    { label: "Manage Admin", link: "/AdminDashboard/manageadmin", icon: <UserPen  size={26} /> },
+    { label: "Manage User", link: "/AdminDashboard/manageuser", icon: <UserPen  size={26} /> },
+    { label: "About", link: "/about", icon: <Info size={26} /> },
   ];
 
   return (
     <div className="flex">
+
       {/* Sidebar */}
-      <aside
-        className={`h-screen bg-white flex flex-col shadow-lg transition-all duration-300 ease-in-out
-        ${isMobile ? "w-16" : isExpanded ? "w-64" : "w-20"}`}
-        onMouseEnter={() => !isMobile && setIsExpanded(true)}
-        onMouseLeave={() => !isMobile && setIsExpanded(false)}
-      >
+          <aside
+      className={`h-screen bg-white flex flex-col shadow-lg transition-all duration-300 ease-in-out
+      ${isMobile ? "w-16" : "w-64"} flex-shrink-0 pt-16`}
+    >
         {/* Sidebar Top */}
         <div className="flex items-center justify-center p-4 border-b relative">
           {/* Show logo + title only on desktop */}
@@ -42,20 +43,15 @@ function AdminSidebar() {
                 alt="Logo"
                 className="w-[50px] h-auto object-contain"
               />
-              {isExpanded && (
-                <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat] text-center">
-                  53EBG8
-                </span>
-              )}
+              <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat] text-center">
+                53EBG8
+              </span>
             </div>
           )}
 
           {/* Hamburger only on mobile */}
           {isMobile && (
-            <button
-              onClick={() => setIsOpen(true)}
-              className="text-black"
-            >
+            <button onClick={() => setIsOpen(true)} className="text-black">
               <Menu size={28} />
             </button>
           )}
@@ -66,15 +62,13 @@ function AdminSidebar() {
           <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
             {menuItems.map((item, idx) => (
               <Link
-  key={idx}
-  to={item.link}   // ✅ use "to" instead of "href"
-  className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
->
-  {item.icon}
-  {isExpanded && <span>{item.label}</span>}
-</Link>
-
-
+                key={idx}
+                to={item.link}
+                className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
+              >
+                {item.icon}
+                <span>{item.label}</span>
+              </Link>
             ))}
           </nav>
         )}

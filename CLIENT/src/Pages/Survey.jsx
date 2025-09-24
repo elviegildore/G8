@@ -1,103 +1,130 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { supabase } from "../supabaseClient";
+import supabase from "../supabaseClient.js";
 
 const SurveyList = () => {
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [filter, setFilter] = useState("all");
+
+  // 🔹 Fetch surveys
+  const fetchSurveys = async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("surveys")
+      .select(`
+        id,
+        title,
+        description,
+        survey_questions (
+          id,
+          question_text,
+          question_type,
+          survey_options (
+            id,
+            option_text
+          )
+        )
+      `)
+      .order("id", { ascending: true });
+
+    if (error) {
+      console.error("❌ Error fetching surveys:", error.message);
+    } else {
+      setSurveys(data || []);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchSurveys = async () => {
-      setLoading(true);
-
-      const { data, error } = await supabase
-        .from("surveys")
-        .select(`
-          id,
-          title,
-          survey_questions (
-            id,
-            question_text,
-            question_type,
-            survey_options (
-              id,
-              option_text
-            )
-          )
-        `);
-
-      if (error) {
-        console.error("❌ Error fetching surveys:", error.message);
-      } else {
-        setSurveys(data || []);
-      }
-      setLoading(false);
-    };
-
     fetchSurveys();
+
+    // 🔹 Real-time subscription to auto-update when new survey is inserted
+    const channel = supabase
+      .channel("surveys-changes")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "surveys" },
+        () => {
+          fetchSurveys();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
-  if (loading) return <p className="items-center">Loading surveys...</p>;
+  // 🔹 Apply filter (by title)
+  const filteredSurveys =
+    filter === "all"
+      ? surveys
+      : surveys.filter((s) => s.title === filter);
 
-  if (surveys.length === 0) return <p>No surveys found.</p>;
+  if (loading) return 
+    <div className="flex items-center justify-center h-screen">
+      <p className="text-lg font-semibold">Loading surveys...</p>
+    </div>;
 
-  // Just show the first survey for simplicity
-  const survey = surveys[0];
-  const questions = survey.survey_questions || [];
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const nextQuestion = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-    }
-  };
-
-  const prevQuestion = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
-    }
-  };
+  if (filteredSurveys.length === 0) return <p>No surveys found.</p>;
 
   return (
-    <div className="p-10">
-      <h1 className="text-2xl font-bold mb-4 font-[Montserrat tracking-widest]">{survey.title}</h1>
+    <div className="p-10 space-y-8">
+      <h1 className="text-2xl font-bold mb-4 font-[Montserrat] tracking-widest">
+        Survey List
+      </h1>
 
-      {/* Page-like container */}
-      <div className="border rounded-lg shadow-md h-[70vh] p-6 flex flex-col">
-        {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto">
-          <p className="font-bold text-lg mb-3 font-[Poppins] tracking-widest">
-            {currentQuestion?.question_text}
-          </p>
-          <ul className="space-y-2 ml-4 list-disc font-[Poppins] tracking-wide">
-            {(currentQuestion?.survey_options || []).map((opt) => (
-              <li key={opt.id}>{opt.option_text}</li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Navigation */}
-        <div className="mt-4 flex justify-between">
-        
-          <button
-            onClick={prevQuestion}
-            disabled={currentQuestionIndex === 0}
-            className="w-28 h-12 px-4 py-2 text-base bg-[#696969] text-white rounded disabled:opacity-50 hover:bg-[#555555]"
-          >
-            Previous
-          </button>
-          <button
-            onClick={nextQuestion}
-            disabled={currentQuestionIndex === questions.length - 1}
-            className="w-28 h-12 px-4 py-2 text-base bg-[#696969] text-white rounded disabled:opacity-50 hover:bg-[#555555]"
-          >
-            Next
-          </button>
-
-
-        </div>
+      {/* 🔹 Filter dropdown (Survey Titles) */}
+      <div className="mb-6">
+        <label className="mr-2 font-semibold font-[Poppins]">Filter by survey:</label>
+        <select
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          className="px-3 py-2 border rounded-md"
+        >
+          <option className="font-[Poppins]" value="all">All</option>
+          {surveys.map((s) => (
+            <option key={s.id} value={s.title}>
+              {s.title}
+            </option>
+          ))}
+        </select>
       </div>
+
+      {/* 🔹 List surveys in table format */}
+      {filteredSurveys.map((survey) => (
+        <div
+          key={survey.id}
+          className="border rounded-lg shadow-md p-6 bg-white"
+        >
+          <h2 className="text-xl font-bold mb-2 font-[Montserrat]">{survey.title}</h2>
+          <p className="mb-4 text-black font-[Poppins]">{survey.description}</p>
+
+          <table className="w-full table-fixed border-collapse border rounded-md">
+            <thead>
+              <tr className="bg-[#696969]">
+                <th className="border px-4 py-2 w-1/3 text-white font-[Montserrat] tracking-widest text-center">Question</th>
+                <th className="border px-4 py-2 w-2/3 text-white font-[Montserrat] tracking-widest text-center">Choices</th>
+              </tr>
+            </thead>
+            <tbody>
+              {survey.survey_questions.map((q) => (
+                <tr key={q.id}>
+                  <td className="border px-4 py-2  font-[Poppins]">{q.question_text}</td>
+                  <td className="border px-4 py-2 font-[Poppins]">
+                    <ul className="list-disc ml-5">
+                      {q.survey_options.map((opt) => (
+                        <li key={opt.id}>{opt.option_text}</li>
+                      ))}
+                    </ul>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+        </div>
+      ))}
     </div>
   );
 };
