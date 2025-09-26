@@ -1,130 +1,130 @@
-import { useState, useEffect } from "react";
-import { Home, Info, FileText, FileClock, Menu, X } from "lucide-react";
+import {useState, useEffect} from 'react';
+import {Link} from "react-router-dom";
+import {Home, Menu, X, FilePen, FileChartLine} from "lucide-react"
 
-function UserSidebar() {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+const UserSidebar = () =>  {
+  const [isMobile,  setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Detect mobile screen
+  // This section of code to detect it is on small or mobile screen
+
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 640);
     handleResize();
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+    return () => window.removeEventListener("resize",
+    handleResize);
+   }, []);
 
   const menuItems = [
-    { label: "Home", href: "/userdashboard", icon: <Home size={26} /> },
-    { label: "Surveys", href: "/usersurvey", icon: <FileText size={26} /> },
-    { label: "Survey History", href: "/UserProgress", icon: <FileClock size={26} /> },
-    { label: "About", href: "/about", icon: <Info size={26} /> },
+    {label: "Home", link: "/Userdashboard", icon: <Home size={26}/>},
+    {label: "Survey", link: "/Userdashboard/UserSurvey", icon: < FilePen size={26}/>},
+    {label: "Profile", link: "/Userdashboard/Profile", icon: < FileChartLine size={26}/>},
+    
+
+  
   ];
 
   return (
     <div className="flex">
-      {/* Sidebar */}
-      <aside
-        className={`h-screen bg-white flex flex-col shadow-lg transition-all duration-300 ease-in-out
-        ${isMobile ? "w-16" : isExpanded ? "w-64" : "w-20"}`}
-        onMouseEnter={() => !isMobile && setIsExpanded(true)}
-        onMouseLeave={() => !isMobile && setIsExpanded(false)}
-      >
-        {/* Sidebar Top */}
-        <div className="flex items-center justify-center p-4 border-b relative">
-          {/* Show logo + title only on desktop */}
+
+        {/* SIDE BAR SECTION*/}
+
+        <aside className={`h-screen bg-white flex flex-col shadow-lg transition-all duration-300 ease-in-out ${isMobile ? "w-16" : "w-64"} flex-shrink-0 pt-16`} >
+
+          {/** TOP PART OF THE SIDEBAR */}
+
+            <div className="flex items-center justify-center p-4 border-b relative">
+
+              {/** LOGO AND TITLE ONLY ON DESKTOP */}
+                  {!isMobile && (
+                    <div className="flex flex-col items-center justify-center gap-2 w-full">
+                      <img src="/g8LOGO.png" alt="Logo" className='w-[50px] h-auto object-contain' />
+
+                      <span className='text-sm font-semibold tracking-widest text-black font-[Montserrat] text-center'>
+                        53EBG8
+                      </span>
+                    </div>
+                  )}
+
+              {/** HAMBURGER ONLY ON MOBILE MENU */}
+                  {isMobile && (
+                    <button onClick={() => setIsOpen(true)} className='text-black'>
+
+                      <Menu size={28}/>
+                      
+                    </button>
+                  )}
+            </div>
+
+
+          {/** FOR DESKTOP NAVIGATION */}
           {!isMobile && (
-            <div className="flex flex-col items-center justify-center gap-2 w-full">
-              <img
-                src="/g8LOGO.png"
-                alt="Logo"
-                className="w-[50px] h-auto object-contain"
-              />
-              {isExpanded && (
-                <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat] text-center">
-                  53EBG8
-                </span>
-              )}
-            </div>
-          )}
+            <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
+              {menuItems.map((items, idx) => (
+                <Link key={idx} to={items.link} className='flex items-center gap-3 p-3 rounded hover:bg-gray-200'> 
 
-          {/* Hamburger only on mobile */}
+                {items.icon}
+                <span>{items.label}</span>
+                </Link>
+              ))}
+            </nav>
+          )}       
+        </aside>
+
+        {/** SLIDING NAVIGATION PANEL (MOBILE ONLY) */}
           {isMobile && (
-            <button
-              onClick={() => setIsOpen(true)}
-              className="text-black"
-            >
-              <Menu size={28} />
-            </button>
-          )}
-        </div>
+          <div className={`fixed top-0 left-0 h-screen w-56 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50 ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
+          >
+            {/** PANEL HEADER WITH LOGO AND TITLE */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <img src="/g8LOGO.png" alt="Logo" className='w-[35px] h-auto object-contain' />
+            
 
-        {/* Desktop Navigation */}
-        {!isMobile && (
-          <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
-            {menuItems.map((item, idx) => (
-              <a
-                key={idx}
-                href={item.href}
-                className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
-              >
-                {item.icon}
-                {isExpanded && <span>{item.label}</span>}
-              </a>
-            ))}
-          </nav>
-        )}
-      </aside>
+          <span className='text-sm font-semibold tracking-widest text-black font-[Montserrat]'>
+            53EBG8
+          </span>
 
-      {/* Sliding Navigation Panel (Mobile Only) */}
-      {isMobile && (
-        <div
-          className={`fixed top-0 left-0 h-screen w-56 bg-white shadow-lg transform transition-transform duration-300 ease-in-out z-50
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
-        >
-          {/* Panel Header with Logo + Title */}
-          <div className="flex items-center justify-between p-4 border-b">
-            <div className="flex items-center gap-2">
-              <img
-                src="/g8LOGO.png"
-                alt="Logo"
-                className="w-[35px] h-auto object-contain"
-              />
-              <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat]">
-                53EBG8
-              </span>
-            </div>
-            <button onClick={() => setIsOpen(false)} className="text-black">
+          <button onClick={() => setIsOpen(false)} className='text-black'>
               <X size={28} />
-            </button>
+           </button>
           </div>
-
-          {/* Panel Navigation */}
+        
+        
+            
+            
+          
+            
+         
+        
+          {/** PANEL NAVIGATION */}
+          
           <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
-            {menuItems.map((item, idx) => (
-              <a
-                key={idx}
-                href={item.href}
-                className="flex items-center gap-3 p-3 rounded hover:bg-gray-200"
-                onClick={() => setIsOpen(false)}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </a>
+            {menuItems.map((items, idx) => (
+              <Link key={idx} to={items.link} className='flex items-center gap-3 p-3 rounded hover:bg-gray-200' onClick={() => setIsOpen(false)}>
+              
+              {items.icon}
+              {items.label}
+              </Link>
+
             ))}
+
           </nav>
-        </div>
-      )}
+          </div>)}
+        
+            
+            {/** OVERLAY WHEN PANEL IS OPEN */}
+            {isMobile && isOpen && (
+              <div className='fixed inset-0 bg-white not-visited:bg-opacity-30 z-40' onClick={() => setIsOpen(false)}>
+            </div>        
 
-      {/* Overlay when panel is open */}
-      {isMobile && isOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-30 z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </div>
-  );
-}
+              
+                
+           
+            )}
 
+         </div>
+           )};       
+  
+         
 export default UserSidebar;

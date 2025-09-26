@@ -1,21 +1,23 @@
 import UserSidebar from "../Components/UserSidebar";
-import Survey from "./Survey";
-import UserSurvey from "./UserSurvey";
+import {Outlet} from "react-router-dom"
+
 function UserDashboard() {
+  const desktopSidebarWidth = "w-60";
+
   return (
-    <div className="h-screen flex flex-col bg-gray-100 border-red-300">
-      <div className="flex flex-1">
-        <UserSidebar/>
-        {/* Main content */}
-        <main className="flex-1 p-6">
-          <h1 className="text-2xl font-bold mb-4">Dashboard</h1>
-          <Survey />
-          <UserSurvey />
-        </main>
+   <div className="h-screen flex">
+      {/** SIDEBAR */}
+
+      <div className={`fixed top-0 left-0 h-screen ${desktopSidebarWidth} bg-white z-40`}>
+          <UserSidebar />
       </div>
 
-     
-    </div>
+      {/** MAIN CONTENT */}
+      <main className={`h-screen overflow-y-auto transition-all ml-0 md:ml-64`}>
+        <Outlet />
+      </main>
+
+   </div>
   );
 }
 

@@ -48,13 +48,13 @@ export default function Header() {
             </div>
 
             {/* Welcome text */}
-            <span className="hidden sm:block font-semibold text-black font-[Poppins] text-sm">
+            <span className="hidden sm:block font-semibold text-white font-[Poppins] text-sm">
               {user ? `Welcome, ${user.fullname}` : "Welcome"}
             </span>
 
             {/* Dropdown arrow */}
             <svg
-              className={`w-4 h-4 text-black transition-transform ${
+              className={`w-4 h-4 text-white transition-transform ${
                 dropdownOpen ? "rotate-180" : ""
               }`}
               fill="none"

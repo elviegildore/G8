@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { Home, Info, FileText, Menu, X, FolderKanban, MessageCircleReply, UserPen } from "lucide-react";
 
 function AdminSidebar() {
-  const [isExpanded, setIsExpanded] = useState(true); // ✅ always expanded for desktop
   const [isMobile, setIsMobile] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -14,6 +13,7 @@ function AdminSidebar() {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
 
   const menuItems = [
     { label: "Home", link: "/Admindashboard", icon: <Home size={26} /> },

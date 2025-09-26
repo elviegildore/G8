@@ -1,7 +1,13 @@
+import UserProfile from "./UserProfile"
 
 const UserSurvey = () => {
   return (
-    <div>UserSurvey</div>
+    <div className="text-center">
+
+    <UserProfile />
+
+
+    </div>
       
 
   )
