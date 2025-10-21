@@ -12,10 +12,9 @@ import Survey from "../Pages/Survey.jsx";
 import ManageSurvey from "../Pages/ManageSurvey.jsx"
 import ManageAdmin from "../Pages/ManageAdmin.jsx";
 import ManageUser from "../Pages/ManageUser.jsx";
-import ManageResponse from "../Pages/ManageResponse.jsx";
+import ManageResponse from "../Pages/ManageResponse";
 import UserSurvey from "../Pages/UserSurvey.jsx"
 import UserProfile from "../Pages/UserProfile.jsx";
-
 
 const Routers = () => {
   const { user } = useUser();

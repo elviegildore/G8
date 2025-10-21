@@ -32,7 +32,7 @@ export default function Header() {
   const handleAvatarClick = () => setDropdownOpen(!dropdownOpen);
 
   return (
-    <header className="bg-[#696969] px-4 shadow">
+    <header className="bg-[#757571] px-4 shadow">
       <div className="flex items-center justify-between h-16">
      
 
@@ -43,7 +43,7 @@ export default function Header() {
             className="flex items-center space-x-2  p-2 px-4  focus:outline-none"
           >
             {/* Avatar */}
-            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center text-black font-bold cursor-pointer">
+            <div className="h-8 w-8 rounded-full bg-[#b5b5b3] flex items-center justify-center text-black font-bold cursor-pointer">
               {user ? user.fullname.charAt(0).toUpperCase() : "U"}
             </div>
 

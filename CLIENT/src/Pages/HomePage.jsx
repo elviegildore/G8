@@ -1,7 +1,7 @@
 
 const HomePage = () => {
   return (
-    <div className="bg-gray-100 min-h-screen flex md: flex-col items-center justify-center text-center px-6 sm:px-30 lg:px-24">
+    <div className="bg-green-50 min-h-screen flex md: flex-col items-center justify-center text-center px-6 sm:px-30 lg:px-24">
       <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 font-[Montserrat] tracking-widest">
         53E INDIVIDUAL TRAINING PROFILE
       </h1>

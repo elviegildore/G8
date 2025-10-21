@@ -12,7 +12,7 @@ export default function MainLayout() {
       </div>
 
       {/* Main content */}
-      <main className="pt-16 p-4 bg-gray-50">
+      <main className="pt-16 p-4 bg-green-50">
         <Outlet />
       </main>
 

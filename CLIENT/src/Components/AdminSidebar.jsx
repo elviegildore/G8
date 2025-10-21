@@ -14,12 +14,11 @@ function AdminSidebar() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-
   const menuItems = [
     { label: "Home", link: "/Admindashboard", icon: <Home size={26} /> },
     { label: "Surveys", link: "/Admindashboard/survey", icon: <FileText size={26} /> },
     { label: "Manage Survey", link: "/AdminDashboard/managesurvey", icon: <FolderKanban size={26} /> },
-    { label: "Manage Response", link: "/AdminDashboard/managresponse", icon: <MessageCircleReply size={26} /> },
+    { label: "Manage Response", link: "/AdminDashboard/manageresponse", icon: <MessageCircleReply size={26} /> },
     { label: "Manage Admin", link: "/AdminDashboard/manageadmin", icon: <UserPen  size={26} /> },
     { label: "Manage User", link: "/AdminDashboard/manageuser", icon: <UserPen  size={26} /> },
     { label: "About", link: "/about", icon: <Info size={26} /> },
@@ -44,7 +43,7 @@ function AdminSidebar() {
                 className="w-[50px] h-auto object-contain"
               />
               <span className="text-sm font-semibold tracking-widest text-black font-[Montserrat] text-center">
-                53EBG8
+                53EG8
               </span>
             </div>
           )}

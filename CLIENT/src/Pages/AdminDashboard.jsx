@@ -1,8 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import AdminSidebar from "../Components/AdminSidebar";
+import DashboardCharts from "../Components/DashboardCharts";
 
 function AdminDashboard() {
-  const desktopSidebarWidth = "w-3"; // sidebar width (20rem)
+  const desktopSidebarWidth = "w-10";
+  const location = useLocation();
+
+  // Check if current route is exactly /Admindashboard
+  const isDashboardRoot = location.pathname === "/Admindashboard";
 
   return (
     <div className="h-screen flex">
@@ -13,13 +18,16 @@ function AdminDashboard() {
         <AdminSidebar />
       </div>
 
-      {/* Main content */}
-      <main
-        className={`
-          h-screen overflow-y-auto transition-all
-          ml-0 md:ml-60`}
-      >
-        <Outlet />
+      {/* Main Content */}
+      <main className="h-screen overflow-y-auto transition-all ml-0 md:ml-60 p-6">
+        {isDashboardRoot ? (
+          <>
+            <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+            <DashboardCharts />
+          </>
+        ) : (
+          <Outlet />
+        )}
       </main>
     </div>
   );

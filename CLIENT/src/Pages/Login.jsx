@@ -139,7 +139,7 @@ const Login = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-gray-600"
+              className="absolute right-3 top-3 text-[#57564F]"
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
             </button>
@@ -156,7 +156,7 @@ const Login = () => {
 
           <button
             type="submit"
-            className="w-full bg-[#57564F] text-white p-3 rounded-md font-semibold hover:bg-black transition duration-200 font-[Montserrat]"
+            className="w-full bg-[#6a6a63] text-white p-3 rounded-md font-semibold hover:bg-[#4f4e4b] transition duration-200 font-[Montserrat]"
           >
             Login
           </button>

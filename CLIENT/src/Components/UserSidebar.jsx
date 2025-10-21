@@ -62,7 +62,7 @@ const UserSidebar = () =>  {
           {!isMobile && (
             <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
               {menuItems.map((items, idx) => (
-                <Link key={idx} to={items.link} className='flex items-center gap-3 p-3 rounded hover:bg-gray-200'> 
+                <Link key={idx} to={items.link} className='flex items-center gap-3 p-3 rounded hover:bg-stone-300'> 
 
                 {items.icon}
                 <span>{items.label}</span>
@@ -101,7 +101,7 @@ const UserSidebar = () =>  {
           
           <nav className="flex-1 p-2 space-y-2 overflow-y-auto text-black">
             {menuItems.map((items, idx) => (
-              <Link key={idx} to={items.link} className='flex items-center gap-3 p-3 rounded hover:bg-gray-200' onClick={() => setIsOpen(false)}>
+              <Link key={idx} to={items.link} className='flex items-center gap-3 p-3 rounded hover:bg-green-500' onClick={() => setIsOpen(false)}>
               
               {items.icon}
               {items.label}
