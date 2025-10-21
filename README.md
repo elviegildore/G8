@@ -1,3 +1,0 @@
-# G8
-
-website
